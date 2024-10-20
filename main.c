@@ -22,7 +22,7 @@ int x_error_handler(Display *display, XErrorEvent *error) {
 int main() {
 
   char *fontname = "Fragment Mono:size=14";
-  X11_If *x11 = x11_init(15, 50, 200);
+  X11_If *x11 = x11_init(15, 51, 200);
 
   // xft config and setup
   load_font(x11, fontname);
@@ -45,7 +45,7 @@ int main() {
   // XMapWindow(x11->display, x11->window);
   // GC gc = XCreateGC(x11->display, x11->window, 0, NULL);
   // XFreeGC(x11->display, gc);
-  render_mainloop(x11);
+  render_mainloop(x11, pty);
   /* Flush the output buffer */
   // XFlush(x11->display);
   XftColorFree(x11->display, DefaultVisual(x11->display, x11->screen),

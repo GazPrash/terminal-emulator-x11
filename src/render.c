@@ -21,24 +21,46 @@ void render_screen(X11_If *x11, int total_lines, int total_line_input_len,
     XftDrawString8(x11->xftdraw, x11->xftcolor, x11->xftfont, 0,
                    20 + i * x11->font_h, convtText, x11->cell_x);
   }
+  // XSync(x11->display, False);
+}
+
+void render_screen_alt(X11_If *x11) {
+  for (int i = 0; i < x11->cell_y; i++) {
+    char actual_line[x11->cell_x];
+    for (int j = 0; j < x11->cell_x; j++) {
+      actual_line[j] = x11->buff[i][j];
+    }
+    XftChar8 *convtText = (XftChar8 *)(actual_line);
+    if ((!x11->xftfont) || (!x11->xftdraw) || (!convtText)) {
+      perror("Error with xft font or drawable - render.c");
+    }
+    XftDrawString8(x11->xftdraw, x11->xftcolor, x11->xftfont, 0,
+                   20 + i * x11->font_h, convtText, x11->cell_x);
+  }
 }
 
 int scroll_one(X11_If *x11) { return 1; }
 int can_backtrack(X11_If *x11) { return 1; }
 
 void render_mainloop(X11_If *x11, PTY *pty) {
-  char lines[x11->cell_y][x11->cell_x];
+  // char lines[x11->cell_y][x11->cell_x];
+  if (!x11->buff) {
+    perror("Buffer not initialized - x11-buff - render.c");
+  }
   for (int i = 0; i < x11->cell_y; i++) {
     for (int j = 0; j < x11->cell_x; j++) {
-      lines[i][j] = 'A';
+      x11->buff[i][j] = ' ';
     }
+    x11->buff[i][x11->cell_x] = '\0';
   }
-  int line_number = 0;
-  int line_input_len = 0;
+  // int line_number = 0;
+  // int line_input_len = 0;
 
+  x11->pos_x = 1;
+  printf("posn : %d, %d \n", x11->pos_x, x11->pos_y);
   while (1) {
 
-    printf("%ld \n", x11->window);
+    printf("posn : %d, %d | %d \n", x11->pos_y, x11->pos_x, x11->cell_x);
     XNextEvent(x11->display, &x11->event);
     // XFillRectangle(display, window, gc, 20, 20, 10, 10);
     if (x11->event.type == Expose) {
@@ -51,7 +73,9 @@ void render_mainloop(X11_If *x11, PTY *pty) {
       // TODO: Render here
       //
       // RenderNow(&TextRenderer, text_x, text_y);
-      render_screen(x11, x11->cell_y, x11->cell_x, lines);
+
+      // render_screen(x11, x11->cell_y, x11->cell_x, lines);
+      render_screen_alt(x11);
 
       // XDrawString(display, window, gc, 20, 50, input_text,
       // input_text_length);
@@ -60,32 +84,31 @@ void render_mainloop(X11_If *x11, PTY *pty) {
     if (x11->event.type == KeyPress) {
       // int buffer_limit = 32;
       // char buffer[buffer_limit];
-      char buffer[1];
+      char buffer[32];
       KeySym ksym;
 
       int input_buffer_len_recv = XLookupString(
           &x11->event.xkey, buffer, sizeof(buffer) - 1, &ksym, NULL);
       buffer[input_buffer_len_recv] = '\0';
-
       if (input_buffer_len_recv > 0 &&
-          (line_input_len + input_buffer_len_recv < x11->cell_x)) {
+          (x11->pos_x + input_buffer_len_recv < x11->cell_x)) {
         if (ksym == XK_Escape) {
           printf("Exiting Terminal");
           break;
         }
 
-        if (ksym == XK_BackSpace && can_backtrack(x11) > 0) {
+        if (ksym == XK_BackSpace) {
           // printf("Backspace detected \n");
           // Backspace handling innit
-          if (line_input_len > 0) {
-            lines[line_number][--line_input_len] =
-                ' '; // Replace the last character by a space
+          if (x11->pos_x > 1) {
+            x11->buff[x11->pos_y][--x11->pos_x] =
+                ' '; // Replace the last character by a space (empty char kinda)
           }
           XClearWindow(x11->display, x11->window);
           // XFillRectangle(x11->display, x11->window, x11->gc, 20, 20, 10, 10);
-
           // TODO: Render here
-          render_screen(x11, x11->cell_y, x11->cell_x, lines);
+          // render_screen(x11, x11->cell_y, x11->cell_x, lines);
+          render_screen_alt(x11);
           //
           // RenderNow(&TextRenderer, text_x, text_y);
           // XftChar8 *convtText = (XftChar8 *)input_text;
@@ -106,30 +129,37 @@ void render_mainloop(X11_If *x11, PTY *pty) {
           // continue;
         }
 
-        // WARN: strcat is not safe, but we have a if-check here in place
-        // Unsafe here
-
-        // line_input_len += input_buffer_len_recv;
-        lines[line_number][++line_input_len] = buffer[0];
-        // strcat(lines[line_number], buffer);
+        if (x11->pos_x >= x11->cell_x - 2) {
+          // if (x11->pos_y >= x11->cell_y) {
+          // }
+          x11->pos_x = 1;
+          dlog;
+          x11->buff[++x11->pos_y][x11->pos_x] = buffer[0];
+        } else {
+          x11->buff[x11->pos_y][x11->pos_x++] = buffer[0];
+        }
         XClearWindow(x11->display, x11->window);
         // XFillRectangle(x11->display, x11->window, x11->gc, 20, 20, 10, 10);
 
         // TODO: Render here
-        render_screen(x11, x11->cell_y, x11->cell_x, lines);
-        printf("Key pressed: '%s' (keycode: %d, keysym: %lu, inptexlen : %d)\n",
-               lines[line_number], x11->event.xkey.keycode, ksym,
-               line_input_len);
+        //
+        render_screen_alt(x11);
+        // render_screen(x11, x11->cell_y, x11->cell_x, lines);
+        //
+        // printf("Key pressed: '%s' (keycode: %d, keysym: %lu, inptexlen :
+        // %d)\n",
+        //        lines[x11->pos_x], x11->event.xkey.keycode, ksym,
+        //        line_input_len);
 
-        if (line_number >= x11->cell_y) {
-          // write code for scrolling
-          if (scroll_one(x11) == 1) {
-            line_number++;
-            line_number %= x11->cell_y;
-          } else {
-            perror("scroller");
-          }
-        }
+        // if (x11->pos_y >= x11->cell_y) {
+        //   // write code for scrolling
+        //   if (scroll_one(x11) == 1) {
+        //     x11->pos_y++;
+        //     x11->pos_y %= x11->cell_y;
+        //   } else {
+        //     perror("scroller");
+        //   }
+        // }
       }
     }
   }
