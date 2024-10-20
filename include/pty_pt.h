@@ -20,5 +20,6 @@ typedef struct {
   int master, slave;
 } PTY;
 
+PTY *init_pty();
 int attatch_pty(PTY *pty);
 int spawn_process(PTY *pty);

@@ -30,7 +30,19 @@ typedef struct {
 
   XEvent event;
 
+  // xft config members
+  XftDraw *xftdraw;
+  XftFont *xftfont;
+  XftColor *xftcolor;
+
 } X11_If;
 
-X11_If *build_x11_interface(XftFont *xftr, int w, int h, int timeout);
+X11_If *x11_init(int row, int col, int timeout);
+void setup_xft(X11_If *x11);
+void load_font(X11_If *x11, char *fontname);
+void build_x11_interface(X11_If *x11);
+
+// functions that have pty dependency
+int record_termsize_ioctl_pty(X11_If *x11, PTY *pty);
 void handle_event(XKeyEvent *event, PTY *pty);
+int run_shell(X11_If *x11, PTY *pty);
