@@ -20,9 +20,20 @@
 
 /*xft_renderer *setup(X11_If *x11, char *fontname);*/
 
-void render_mainloop(X11_If *x11, PTY *pty);
+typedef struct {
+  char **renbuf;
+  int cell_x, cell_y;
+  // render posn:
+  int pos_x, pos_y;
+  int topline;
+
+} render_group;
+
+render_group *render_init(X11_If *x11);
+void render_shell_mainloop(render_group *rg, X11_If *x11, PTY *pty);
 int can_backtrack(X11_If *x11);
 void render_screen(X11_If *x11, int total_lines, int total_line_input_len,
                    char lines[total_lines][total_line_input_len]);
-void render_screen_alt(X11_If *x11);
+void render_screen_alt(render_group *rg, X11_If *x11);
 int scroll_one(X11_If *x11);
+void xevent_handler(render_group *rg, X11_If *x11, PTY *pty);

@@ -25,6 +25,7 @@ X11_If *x11_init(int row, int col, int timeout) {
   x11->timeout = timeout;
   XEvent event;
   x11->event = event;
+  x11->fd = ConnectionNumber(x11->display);
   /* The terminal will have a fixed size of 80x25 cells. This is an
    * arbitrary number. No resizing has been implemented and child
    * processes can't even ask us for the current size (for now).
@@ -40,6 +41,7 @@ X11_If *x11_init(int row, int col, int timeout) {
 
   x11->pos_x = 0;
   x11->pos_y = 0;
+  x11->topline = 0;
   if (x11->buff == NULL) {
     perror("malloc");
     return NULL;

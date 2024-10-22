@@ -27,6 +27,7 @@ typedef struct {
   // cursor posn:
   int pos_x, pos_y;
   int *buff_len;
+  int topline;
 
   XEvent event;
 
