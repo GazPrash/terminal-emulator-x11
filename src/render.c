@@ -1,4 +1,5 @@
 #include "../include/render.h"
+#include <X11/X.h>
 #include <X11/Xlib.h>
 // #include <X11/Xft/Xft.h>
 #include <X11/extensions/Xrender.h>
@@ -72,7 +73,8 @@ int scroll_one(X11_If *x11) {
 }
 int can_backtrack(X11_If *x11) { return 1; }
 
-void xevent_handler(render_group *rg, X11_If *x11, PTY *pty) {
+void xevent_handler(render_group *rg, X11_If *x11, PTY *pty,
+                    Atom wm_delete_window) {
   // char **rbuf = rg->renbuf;
 
   while (XPending(x11->display)) {
@@ -89,7 +91,9 @@ void xevent_handler(render_group *rg, X11_If *x11, PTY *pty) {
       int input_buffer_len_recv = XLookupString(
           &x11->event.xkey, buffer, sizeof(buffer) - 1, &ksym, NULL);
       buffer[input_buffer_len_recv] = '\0';
-      write(pty->master, &buffer, 1);
+      for (int i = 0; i < input_buffer_len_recv; i++) {
+        write(pty->master, &buffer[i], 1);
+      }
       if (input_buffer_len_recv > 0 &&
           (rg->pos_x + input_buffer_len_recv < rg->cell_x)) {
         if (ksym == XK_Escape) {
@@ -116,7 +120,8 @@ void xevent_handler(render_group *rg, X11_If *x11, PTY *pty) {
           break;
         }
 
-        if (rg->pos_x >= rg->cell_x - 2) {
+        printf("xpos: %d, %d \n", rg->pos_y, rg->pos_x);
+        if (rg->pos_x >= rg->cell_x - 2 * 1) {
           rg->pos_x = 1;
           // dlog;
           rg->renbuf[++rg->pos_y][rg->pos_x] = buffer[0];
@@ -127,10 +132,34 @@ void xevent_handler(render_group *rg, X11_If *x11, PTY *pty) {
         render_screen_alt(rg, x11);
       }
     }
+    if (x11->event.type == ClientMessage) {
+      if ((Atom)x11->event.xclient.data.l[0] == wm_delete_window) {
+        // Handle the window close event (WM_DELETE_WINDOW)
+        printf("Window close requested, performing cleanup...\n");
+
+        for (int i = 0; i < x11->cell_y; i++) {
+          char *cstr = x11->buff[i];
+          puts(cstr);
+          printf("line \n");
+        }
+
+        XftColorFree(x11->display, DefaultVisual(x11->display, x11->screen),
+                     DefaultColormap(x11->display, x11->screen), x11->xftcolor);
+        XftFontClose(x11->display, x11->xftfont);
+        // XUnloadFont(display, font);
+        XCloseDisplay(x11->display);
+        XftDrawDestroy(x11->xftdraw);
+        free(x11->buff);
+        free(x11->xftcolor);
+        free(x11);
+        exit(0);
+      }
+    }
   }
 }
 
-void render_shell_mainloop(render_group *rg, X11_If *x11, PTY *pty) {
+void render_shell_mainloop(render_group *rg, X11_If *x11, PTY *pty,
+                           Atom wm_delete_window) {
   // char lines[x11->cell_y][x11->cell_x];
   int i, maxfd;
   fd_set readable;
@@ -226,7 +255,7 @@ void render_shell_mainloop(render_group *rg, X11_If *x11, PTY *pty) {
     }
     temp_iter++;
     if (FD_ISSET(x11->fd, &readable)) {
-      xevent_handler(rg, x11, pty);
+      xevent_handler(rg, x11, pty, wm_delete_window);
     } else {
     }
   }
