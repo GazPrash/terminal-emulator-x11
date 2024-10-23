@@ -77,7 +77,6 @@ void xevent_handler(render_group *rg, X11_If *x11, PTY *pty) {
 
   while (XPending(x11->display)) {
     XNextEvent(x11->display, &x11->event);
-    printf("atleast were here");
     if (x11->event.type == Expose) {
       XClearWindow(x11->display, x11->window);
       render_screen_alt(rg, x11);
@@ -170,7 +169,7 @@ void render_shell_mainloop(render_group *rg, X11_If *x11, PTY *pty) {
       return;
     }
 
-    printf("posn : %d, %d | %d \n", rg->pos_y, rg->pos_x, rg->cell_x);
+    // printf("posn : %d, %d | %d \n", rg->pos_y, rg->pos_x, rg->cell_x);
 
     if (FD_ISSET(pty->master, &readable)) {
       if (read(pty->master, buf, 1) <= 0) {
@@ -225,10 +224,8 @@ void render_shell_mainloop(render_group *rg, X11_If *x11, PTY *pty) {
       }
       // x11_redraw(x11);
     }
-    printf("idk this is running tho %d : ", temp_iter);
     temp_iter++;
     if (FD_ISSET(x11->fd, &readable)) {
-      printf("fuck didnt think of that ");
       xevent_handler(rg, x11, pty);
     } else {
     }

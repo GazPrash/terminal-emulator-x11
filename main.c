@@ -45,7 +45,8 @@ int main() {
   // XMapWindow(x11->display, x11->window);
   // GC gc = XCreateGC(x11->display, x11->window, 0, NULL);
   // XFreeGC(x11->display, gc);
-  render_mainloop(x11, pty);
+  render_group *rg = render_init(x11);
+  render_shell_mainloop(rg, x11, pty);
   /* Flush the output buffer */
   // XFlush(x11->display);
   XftColorFree(x11->display, DefaultVisual(x11->display, x11->screen),
