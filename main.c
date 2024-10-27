@@ -11,13 +11,12 @@
 int x_error_handler(Display *display, XErrorEvent *error) {
   char error_text[1024];
   XGetErrorText(display, error->error_code, error_text, sizeof(error_text));
-  // Output error details
   fprintf(stderr, "X Error: %s\n", error_text);
   fprintf(stderr, "Request code: %d\n", error->request_code);
   fprintf(stderr, "Minor code: %d\n", error->minor_code);
   fprintf(stderr, "Resource ID: 0x%lx\n", error->resourceid);
 
-  return 0; // Return 0 to continue the program
+  return 0;
 }
 
 int main() {
