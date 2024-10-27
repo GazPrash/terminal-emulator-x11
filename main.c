@@ -22,7 +22,7 @@ int x_error_handler(Display *display, XErrorEvent *error) {
 
 int main() {
   char *fontname = "IosevkaNerdFont-Regular:size=15";
-  X11_If *x11 = x11_init(15, 52, 200);
+  X11_If *x11 = x11_init(35, 80, 200);
   // xft config and setup
   load_font(x11, fontname);
   build_x11_interface(x11);
@@ -57,6 +57,7 @@ int main() {
   //   printf("line \n");
   // }
   printf("doest this even runnnn | line \n");
+  // no it doesnt
   /* Flush the output buffer */
   // XFlush(x11->display);
   //

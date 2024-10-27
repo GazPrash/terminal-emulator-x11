@@ -42,6 +42,7 @@ X11_If *x11_init(int row, int col, int timeout) {
   x11->pos_x = 0;
   x11->pos_y = 0;
   x11->topline = 0;
+  x11->scroll_on = 0;
   if (x11->buff == NULL) {
     perror("malloc");
     return NULL;
