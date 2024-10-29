@@ -102,7 +102,7 @@ void build_x11_interface(X11_If *x11) {
       WhitePixel(x11->display, x11->screen));
 
   x11->window = window;
-  XStoreName(x11->display, x11->window, "temm 0.01");
+  XStoreName(x11->display, x11->window, "temm 0.1.0");
   XSelectInput(x11->display, x11->window, ExposureMask | KeyPressMask);
   XMapWindow(x11->display, x11->window);
 
@@ -131,102 +131,3 @@ void handle_event(XKeyEvent *event, PTY *pty) {
   for (int i = 0; i < num; i++)
     write(pty->master, &buffer[i], 1);
 }
-
-// int run_shell(X11_If *x11, PTY *pty) {
-//   int i, maxfd;
-//   fd_set readable;
-//   XEvent ev;
-//   char buf[1];
-//   int just_wrapped = 0; // bool
-//   maxfd = pty->master > x11->fd ? pty->master : x11->fd;
-//
-//   while (1) {
-//     FD_ZERO(&readable);
-//     FD_SET(pty->master, &readable);
-//     FD_SET(x11->fd, &readable);
-//
-//     if (select(maxfd + 1, &readable, NULL, NULL, NULL) == -1) {
-//       perror("select");
-//       return 1;
-//     }
-//
-//     if (FD_ISSET(pty->master, &readable)) {
-//       if (read(pty->master, buf, 1) <= 0) {
-//         /* This is not necessarily an error but also happens
-//          * when the child exits normally. */
-//         fprintf(stderr, "Nothing to read from child: ");
-//         perror(NULL);
-//         return 1;
-//       }
-//
-//       if (buf[0] == '\r') {
-//         /* "Carriage returns" are probably the most simple
-//          * "terminal command": They just make the cursor jump
-//          * back to the very first column. */
-//         x11->pos_x = 0;
-//       } else {
-//         if (buf[0] != '\n') {
-//           /* If this is a regular byte, store it and advance
-//            * the cursor one cell "to the right". This might
-//            * actually wrap to the next line, see below. */
-//           // x11->buff[x11->pos_y * x11->cell_x + x11->pos_x] = buf[0];
-//           x11->buff[x11->pos_y][x11->pos_x] = buf[0];
-//           x11->pos_x++;
-//
-//           if (x11->pos_x >= x11->cell_x) {
-//             x11->pos_x = 0;
-//             x11->pos_y++;
-//             just_wrapped = 1;
-//           } else
-//             just_wrapped = 0;
-//         } else if (!just_wrapped) {
-//           /* We read a newline and we did *not* implicitly
-//            * wrap to the next line with the last byte we read.
-//            * This means we must *now* advance to the next
-//            * line.
-//            *
-//            * This is the same behaviour that most other
-//            * terminals have: If you print a full line and then
-//            * a newline, they "ignore" that newline. (Just
-//            * think about it: A full line of text could always
-//            * wrap to the next line implicitly, so that
-//            * additional newline could cause the cursor to jump
-//            * to the next line *again*.) */
-//           x11->pos_y++;
-//           just_wrapped = 0;
-//         }
-//
-//         /* We now check if "the next line" is actually outside
-//          * of the buffer. If it is, we shift the entire content
-//          * one line up and then stay in the very last line.
-//          *
-//          * After the memmove(), the last line still has the old
-//          * content. We must clear it. */
-//         if (x11->pos_y >= x11->cell_y) {
-//           memmove(x11->buff, &x11->buff[x11->cell_x],
-//                   x11->cell_x * (x11->cell_y - 1));
-//           x11->pos_y = x11->cell_y - 1;
-//
-//           for (i = 0; i < x11->cell_x; i++)
-//             x11->buff[x11->pos_y * x11->cell_x + i] = 0;
-//         }
-//       }
-//
-//       // x11_redraw(x11);
-//     }
-//
-//     if (FD_ISSET(x11->fd, &readable)) {
-//       while (XPending(x11->dpy)) {
-//         XNextEvent(x11->dpy, &ev);
-//         switch (ev.type) {
-//         case Expose:
-//           x11_redraw(x11);
-//           break;
-//         case KeyPress:
-//           x11_key(&ev.xkey, pty);
-//           break;
-//         }
-//       }
-//     }
-//   }
-// }

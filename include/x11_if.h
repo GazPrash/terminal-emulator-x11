@@ -7,7 +7,7 @@
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 
-// X11 interface and config
+// X11 text interface and config
 typedef struct {
   int fd;
   Display *display;
@@ -31,6 +31,8 @@ typedef struct {
   int topline;
 
   XEvent event;
+  int g_backspace;
+  int wait_counter;
 
   // xft config members
   XftDraw *xftdraw;

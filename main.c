@@ -20,7 +20,7 @@ int x_error_handler(Display *display, XErrorEvent *error) {
 }
 
 int main() {
-  char *fontname = "IosevkaNerdFont-Regular:size=15";
+  char *fontname = "SourceCodePro-Regular.ttf:size=15";
   X11_If *x11 = x11_init(35, 80, 200);
   // xft config and setup
   load_font(x11, fontname);
