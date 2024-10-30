@@ -118,6 +118,7 @@ void draw_on_screen(X11_If *x11, PTY *pty, Atom wm_delete_window) {
       // x11_redraw(x11);
       break;
     case ClientMessage:
+      // cleanup
       if ((Atom)x11->event.xclient.data.l[0] == wm_delete_window) {
         // Handle the window close event (WM_DELETE_WINDOW)
         printf("Window close requested, performing cleanup...\n");
@@ -130,6 +131,7 @@ void draw_on_screen(X11_If *x11, PTY *pty, Atom wm_delete_window) {
         free(x11->buff);
         free(x11->xftcolor);
         free(x11);
+        free(pty);
         exit(0);
       }
     }
@@ -155,17 +157,16 @@ void draw_on_screen(X11_If *x11, PTY *pty, Atom wm_delete_window) {
 //         // render_screen_alt(rg, x11);
 //         render_screen_scrollable(rg, x11);
 
-void render_shell_mainloop(render_group *rg, X11_If *x11, PTY *pty,
-                           Atom wm_delete_window) {
+void render_shell_mainloop(X11_If *x11, PTY *pty, Atom wm_delete_window) {
   int maxfd;
   fd_set readable;
   char buf[8];
   int just_wrapped = 0; // bool
   maxfd = pty->master > x11->fd ? pty->master : x11->fd;
 
-  if (!rg->renbuf) {
-    perror("Render Buffer not initialized - x11-buff - render.c");
-  }
+  // if (!rg->renbuf) {
+  //   perror("Render Buffer not initialized - x11-buff - render.c");
+  // }
 
   if (!x11->buff) {
     perror("X11 Buffer not initialized - x11-buff - render.c");
@@ -185,7 +186,7 @@ void render_shell_mainloop(render_group *rg, X11_If *x11, PTY *pty,
 
     if (FD_ISSET(pty->master, &readable)) {
       if (read(pty->master, buf, 1) <= 0) {
-        perror("Nothing to read - render.c | read/sys");
+        fprintf(stderr, "Nothing to read - render.c | read/sys \n");
         return;
       }
       if (buf[0] == '\r') {

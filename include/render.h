@@ -31,8 +31,7 @@ typedef struct {
 } render_group;
 
 render_group *render_init(X11_If *x11);
-void render_shell_mainloop(render_group *rg, X11_If *x11, PTY *pty,
-                           Atom wm_delete_window);
+void render_shell_mainloop(X11_If *x11, PTY *pty, Atom wm_delete_window);
 int can_backtrack(X11_If *x11);
 
 /*void render_screen(X11_If *x11, int total_lines, int total_line_input_len,*/

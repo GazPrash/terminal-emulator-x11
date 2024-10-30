@@ -41,36 +41,6 @@ int main() {
   if (!spawn_process(pty)) {
     return 1;
   }
-
-  // XSetErrorHandler(x_error_handler);
-  // XSelectInput(x11->display, x11->window, ExposureMask | KeyPressMask);
-  // XMapWindow(x11->display, x11->window);
-  // GC gc = XCreateGC(x11->display, x11->window, 0, NULL);
-  // XFreeGC(x11->display, gc);
-  render_group *rg = render_init(x11);
-  render_shell_mainloop(rg, x11, pty, wm_delete_window);
-
-  // for (int i = 0; i < x11->cell_y; i++) {
-  //   char *cstr = x11->buff[i];
-  //   puts(cstr);
-  //   printf("line \n");
-  // }
-  printf("doest this even runnnn | line \n");
-  // no it doesnt
-  /* Flush the output buffer */
-  // XFlush(x11->display);
-  //
-  //
-  //
-  // XftColorFree(x11->display, DefaultVisual(x11->display, x11->screen),
-  //              DefaultColormap(x11->display, x11->screen), x11->xftcolor);
-  // XftDrawDestroy(x11->xftdraw);
-  // XftFontClose(x11->display, x11->xftfont);
-  // // XUnloadFont(display, font);
-  // XCloseDisplay(x11->display);
-  // XftDrawDestroy(x11->xftdraw);
-  // free(x11->buff);
-  // free(x11->xftcolor);
-  // free(x11);
-  // XCloseDisplay(x11->display);
+  // render_group *rg = render_init(x11);
+  render_shell_mainloop(x11, pty, wm_delete_window);
 }
