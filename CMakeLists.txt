@@ -9,3 +9,5 @@ add_executable(temm ${SRC} "main.c")
 
 target_include_directories(temm PRIVATE /usr/include/freetype2 include)
 target_link_libraries(temm X11 Xft freetype)
+
+# add_compile_options(-g)

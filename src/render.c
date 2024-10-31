@@ -4,6 +4,7 @@
 #include <X11/Xft/XftCompat.h>
 #include <X11/Xlib.h>
 // #include <X11/Xft/Xft.h>
+#include "../include/cleanup.h"
 #include <X11/extensions/Xrender.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -121,17 +122,7 @@ void draw_on_screen(X11_If *x11, PTY *pty, Atom wm_delete_window) {
       // cleanup
       if ((Atom)x11->event.xclient.data.l[0] == wm_delete_window) {
         // Handle the window close event (WM_DELETE_WINDOW)
-        printf("Window close requested, performing cleanup...\n");
-        XftColorFree(x11->display, DefaultVisual(x11->display, x11->screen),
-                     DefaultColormap(x11->display, x11->screen), x11->xftcolor);
-        XftFontClose(x11->display, x11->xftfont);
-        // XUnloadFont(display, font);
-        XCloseDisplay(x11->display);
-        XftDrawDestroy(x11->xftdraw);
-        free(x11->buff);
-        free(x11->xftcolor);
-        free(x11);
-        free(pty);
+        call_cleanup(x11, pty);
         exit(0);
       }
     }

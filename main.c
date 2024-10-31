@@ -1,3 +1,4 @@
+#include "include/cleanup.h"
 #include "include/pty_pt.h"
 #include "include/render.h"
 #include "include/x11_if.h"
@@ -49,4 +50,5 @@ int main() {
   }
   // render_group *rg = render_init(x11);
   render_shell_mainloop(x11, pty, wm_delete_window);
+  call_cleanup(x11, pty);
 }
