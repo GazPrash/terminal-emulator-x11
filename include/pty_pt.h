@@ -14,7 +14,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-#define SHELL "/bin/dash"
+/*#define SHELL "/bin/bash"*/
 
 typedef struct {
   int master, slave;
@@ -22,4 +22,4 @@ typedef struct {
 
 PTY *init_pty();
 int attatch_pty(PTY *pty);
-int spawn_process(PTY *pty);
+int spawn_process(PTY *pty, const char *prefSHELL, const char *loginMode);

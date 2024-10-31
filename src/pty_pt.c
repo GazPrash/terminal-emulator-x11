@@ -34,7 +34,7 @@ int attatch_pty(PTY *pty) {
   return 1;
 }
 
-int spawn_process(PTY *pty) {
+int spawn_process(PTY *pty, const char *prefSHELL, const char *loginMode) {
   pid_t pid;
   char *env[] = {"TERM=dumb", NULL};
 
@@ -45,8 +45,9 @@ int spawn_process(PTY *pty) {
   // (pty - master) attached to our terminal on the
   // x11 interface and finally we use the sys call
   // of execle to execute the shell command.
-  // pty master - slave communication will transfer info between
-  // shell and the terminal interface. thats it
+  // we will write the user input to the pty->master file and
+  // then read from the pty->master file to interpret
+  // the comand and execute it via the user's preferred shell
   pid = fork();
   if (pid == 0) {
     close(pty->master);
@@ -59,7 +60,7 @@ int spawn_process(PTY *pty) {
     dup2(pty->slave, 1);
     dup2(pty->slave, 2);
     close(pty->slave);
-    execle(SHELL, "-" SHELL, (char *)NULL, env);
+    execle(prefSHELL, loginMode, (char *)NULL, env);
     return 0;
   } else if (pid > 0) {
     close(pty->slave);

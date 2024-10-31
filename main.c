@@ -22,6 +22,11 @@ int x_error_handler(Display *display, XErrorEvent *error) {
 int main() {
   char *fontname = "SourceCodePro-Regular.ttf:size=15";
   X11_If *x11 = x11_init(35, 80, 200);
+
+  // shell perference
+  const char *shell = "/bin/dash";
+  const char *login = "-/bin/dash";
+
   // xft config and setup
   load_font(x11, fontname);
   build_x11_interface(x11);
@@ -38,7 +43,8 @@ int main() {
   if (!record_termsize_ioctl_pty(x11, pty)) {
     return 1;
   }
-  if (!spawn_process(pty)) {
+
+  if (!spawn_process(pty, shell, login)) {
     return 1;
   }
   // render_group *rg = render_init(x11);
