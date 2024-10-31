@@ -25,7 +25,7 @@ can get one from the `fonts` directory and install it on your system.
   char *fontname = "<yourfontname>.ttf:size=15";
   ```
 - [3] You now have to select your preferred shell, I recommend using `dash` because in the
-current state, temm cannot render ![Nerd Fonts](https://www.nerdfonts.com/), hence if you are
+current state, temm cannot render [Nerd Fonts](https://www.nerdfonts.com/), hence if you are
 using any fancy prompts like `oh-my-fish` or `starship` then the results could be a little glitchy.
   - Check if you have `dash` installed: 
   ```
