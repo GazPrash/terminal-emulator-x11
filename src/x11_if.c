@@ -81,7 +81,6 @@ void setup_xft(X11_If *x11) {
   }
   x11->xftdraw = xftdraw;
   x11->xftcolor = xftcolor;
-  printf("w and s : %p - %d \n", x11->display, x11->screen);
   XftColorAllocName(x11->display, DefaultVisual(x11->display, x11->screen),
                     DefaultColormap(x11->display, x11->screen), "black",
                     x11->xftcolor);
@@ -95,7 +94,6 @@ void build_x11_interface(X11_If *x11) {
   x11->w = x11->cell_x * x11->font_w;
   x11->h = x11->cell_y * x11->font_h;
 
-  printf("%d, %d \n", x11->w, x11->h);
   Window window = XCreateSimpleWindow(
       x11->display, RootWindow(x11->display, x11->screen), 0, 0, x11->w, x11->h,
       1, BlackPixel(x11->display, x11->screen),

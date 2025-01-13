@@ -12,6 +12,7 @@
 int x_error_handler(Display *display, XErrorEvent *error) {
   char error_text[1024];
   XGetErrorText(display, error->error_code, error_text, sizeof(error_text));
+
   fprintf(stderr, "X Error: %s\n", error_text);
   fprintf(stderr, "Request code: %d\n", error->request_code);
   fprintf(stderr, "Minor code: %d\n", error->minor_code);

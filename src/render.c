@@ -37,27 +37,27 @@ render_group *render_init(X11_If *x11) {
   return rg;
 }
 
-void render_screen_scrollable(render_group *rg, X11_If *x11) {
+void render_screen_scrollable(X11_If *x11) {
   // i != (start - 1) % n + 1; i = i % n + 1
   // for (int i = x11->topline; i != (x11->topline - 1) % x11->cell_y;
   //      i = i % x11->cell_y + 1) {
-  for (int i = 0; i < rg->cell_y; i++) {
-    int ind = (i + rg->topline) % rg->cell_y;
-    // printf("topline : %d \n", rg->topline);
-    // printf("i : %d \n", ind);
-    // sleep(1);
-    // if (i == 14)
-    //   rg->topline++;
-    char actual_line[rg->cell_x];
-    for (int j = 0; j < rg->cell_x; j++) {
-      actual_line[j] = rg->renbuf[ind][j];
+  char buf[1];
+  int rectangle_posy = 0;
+  // char buf2[x11->cell_x];
+  for (int i = 0; i < x11->cell_y; i++) {
+    int ind = (i + x11->topline) % x11->cell_y;
+    for (int j = 0; j < x11->cell_x; j++) {
+      buf[0] = x11->buff[ind][j];
+      if (!iscntrl(buf[0])) {
+        XftChar8 *convtText = (XftChar8 *)buf;
+        XftDrawString8(x11->xftdraw, x11->xftcolor, x11->xftfont,
+                       j * x11->font_w, i * x11->font_h + x11->xftfont->ascent,
+                       convtText, 1);
+      }
     }
-    XftChar8 *convtText = (XftChar8 *)(actual_line);
-    if ((!x11->xftfont) || (!x11->xftdraw) || (!convtText)) {
-      perror("Error with xft font or drawable - render.c");
-    }
-    XftDrawString8(x11->xftdraw, x11->xftcolor, x11->xftfont, 0,
-                   20 + i * x11->font_h, convtText, rg->cell_x);
+    rectangle_posy = x11->scroll_on ? (x11->cell_y - 2) : x11->pos_y;
+    XftDrawRect(x11->xftdraw, x11->xftcolor, x11->pos_x * x11->font_w,
+                rectangle_posy * x11->font_h, x11->font_w, x11->font_h);
   }
   XSync(x11->display, False);
 }
@@ -112,7 +112,8 @@ void draw_on_screen(X11_If *x11, PTY *pty, Atom wm_delete_window) {
       XClearWindow(x11->display, x11->window);
       // render_screen_scrollable_x11buf(rg, x11);
       // x11_redraw(x11);
-      render_screen_non_scrollable(x11);
+      // render_screen_non_scrollable(x11);
+      render_screen_scrollable(x11);
       break;
     case KeyPress:
       register_key_input(x11, pty);
@@ -128,25 +129,6 @@ void draw_on_screen(X11_If *x11, PTY *pty, Atom wm_delete_window) {
     }
   }
 }
-
-// TODO: SCROLLABLES :::
-//
-//         if (x11->pos_x >= (x11->cell_x - 2 * 1)) {
-//           if (x11->pos_y >= (x11->cell_y - 1) || (x11->scroll_on)) {
-//             // new line and scroll
-//             x11->scroll_on = 1;
-//             empty_line(x11->buff[x11->topline], x11->cell_x);
-//             x11->topline = (x11->topline + 1) % x11->cell_y;
-//           }
-//           x11->pos_x = 1;
-//           x11->pos_y = (x11->pos_y + 1) % x11->cell_y;
-//           // x11->buff[x11->pos_y][x11->pos_x++] = buffer[0];
-//         } else {
-//           // x11->buff[x11->pos_y][x11->pos_x++] = buffer[0];
-//         }
-//         XClearWindow(x11->display, x11->window);
-//         // render_screen_alt(rg, x11);
-//         render_screen_scrollable(rg, x11);
 
 void render_shell_mainloop(X11_If *x11, PTY *pty, Atom wm_delete_window) {
   int maxfd;
@@ -195,30 +177,47 @@ void render_shell_mainloop(X11_If *x11, PTY *pty, Atom wm_delete_window) {
           }
         } else {
           if (buf[0] != '\n') {
-
             x11->buff[x11->pos_y][x11->pos_x++] = buf[0];
             if (x11->pos_x >= x11->cell_x - 1) {
               x11->pos_x = 0;
-              x11->pos_y++;
+              x11->pos_y = (x11->pos_y + 1) % x11->cell_y;
+              if (x11->scroll_on) {
+                x11->topline = (x11->topline + 1) % (x11->cell_y);
+                for (int i = 0; i < x11->cell_x; i++) {
+                  x11->buff[x11->topline][i] = 0;
+                }
+              }
               just_wrapped = 1;
             } else
               just_wrapped = 0;
           } else if (!just_wrapped) {
-            x11->pos_y++;
+            // x11->pos_y++;
+            x11->pos_y = (x11->pos_y + 1) % x11->cell_y;
+            if (x11->scroll_on) {
+              x11->topline = (x11->topline + 1) % (x11->cell_y);
+              for (int i = 0; i < x11->cell_x; i++) {
+                x11->buff[x11->topline][i] = 0;
+              }
+            }
+            // x11->topline = (x11->topline + 1) % (x11->cell_y);
             just_wrapped = 0;
           }
 
-          if (x11->pos_y >= x11->cell_y - 1) {
-            x11->pos_y = x11->cell_y - 1;
-            for (int i = 0; i < x11->cell_x; i++) {
-              x11->buff[x11->pos_y][i] = 0;
+          if ((x11->pos_y >= x11->cell_y - 1)) {
+            if (!x11->scroll_on) {
+              x11->scroll_on = 1;
+              x11->topline = (x11->topline + 1) % (x11->cell_y);
+              for (int i = 0; i < x11->cell_x; i++) {
+                x11->buff[x11->topline][i] = 0;
+              }
             }
           }
         }
       }
       XClearWindow(x11->display, x11->window);
       // render_screen_scrollable_x11buf(rg, x11);
-      render_screen_non_scrollable(x11);
+      // render_screen_non_scrollable(x11);
+      render_screen_scrollable(x11);
     }
 
     if (FD_ISSET(x11->fd, &readable)) {
