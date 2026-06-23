@@ -1,4 +1,4 @@
-#include "../include/pty_pt.h"
+#include "pty_pt.h"
 
 PTY *init_pty() {
   PTY *pty = (PTY *)malloc(sizeof(PTY));

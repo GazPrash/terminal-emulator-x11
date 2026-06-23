@@ -1,5 +1,6 @@
-#include "../include/cleanup.h"
+#include "cleanup.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 void call_cleanup(X11_If *x11, PTY *pty) {
   printf("Window close requested, performing cleanup...\n");

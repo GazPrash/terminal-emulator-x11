@@ -1,7 +1,7 @@
-#include "include/cleanup.h"
-#include "include/pty_pt.h"
-#include "include/render.h"
-#include "include/x11_if.h"
+#include "cleanup.h"
+#include "pty_pt.h"
+#include "render.h"
+#include "x11_if.h"
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <stdio.h>
@@ -22,8 +22,11 @@ int x_error_handler(Display *display, XErrorEvent *error) {
 }
 
 int main() {
-  char *fontname = "SourceCodePro-Regular.ttf:size=15";
+  char *fontname = "IosevkaNerdFont-Regular.ttf:size=15";
   X11_If *x11 = x11_init(35, 80, 200);
+  if (!x11) {
+    return 1;
+  }
 
   // shell perference
   const char *shell = "/bin/dash";

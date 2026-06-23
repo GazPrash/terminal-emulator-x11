@@ -1,10 +1,10 @@
-#include "../include/render.h"
-#include <X11/X.h>
-#include <X11/Xft/Xft.h>
-#include <X11/Xft/XftCompat.h>
-#include <X11/Xlib.h>
-// #include <X11/Xft/Xft.h>
-#include "../include/cleanup.h"
+#include "render.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/select.h>
+#include <unistd.h>
+#include "cleanup.h"
 #include <X11/extensions/Xrender.h>
 #include <stdio.h>
 #include <stdlib.h>

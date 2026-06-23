@@ -1,4 +1,4 @@
-#include "../include/x11_if.h"
+#include "x11_if.h"
 #include <X11/Xft/Xft.h>
 #include <X11/Xlib.h>
 #include <stdio.h>

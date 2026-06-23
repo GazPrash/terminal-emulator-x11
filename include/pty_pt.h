@@ -1,5 +1,7 @@
 #pragma once
+#ifndef __APPLE__
 #define _XOPEN_SOURCE 600
+#endif
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <ctype.h>
